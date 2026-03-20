@@ -57,6 +57,7 @@ abstract class Planetas {
     fun gravSoportable(): Boolean {
         return gravedad in 3..15
     }
+
 }
 class Pluton : Planetas() {
     override val nombre: String = "Pluton"

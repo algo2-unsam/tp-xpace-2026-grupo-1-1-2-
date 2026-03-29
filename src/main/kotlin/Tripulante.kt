@@ -1,67 +1,105 @@
 package ar.edu.unsam.algo2
+import java.time.LocalDate
+import java.time.Period
+import kotlin.properties.Delegates
 
 class Mision() {
-
+    var en_curso: Boolean = false
+    lateinit var planeta_asignado : Planeta
+    fun tiene_temp_ideal():Boolean {TODO()}
+    fun tiene_grav_soportable():Boolean {TODO()}
+    var duracion_estimada by Delegates.notNull<Int>()
 }
 
-abstract class Tripulante (var salario_base: Double){ // De esta clase heredan los roles
-    // var perfil_aptitud : Perfil_aptitud = COMPOSICION
-    fun salario() : Double {return salario_base + bonus_salario()}
-    abstract fun bonus_salario() : Double
-    fun experiencia():Double {return TODO()}
-    var mision_asignada : Mision
-
-    fun es_apto():Boolean {return experiencia()>3 && !mision_asignada.en_curso() && condiciones_aptitud()}
+class BaseLanzamiento() {
 }
 
-class Comandante(salario_base: Double) : Tripulante(salario_base) {
-    override fun bonus_salario(): Double {super.salario_base + (super.salario_base*0.05)*super.misiones_exitosas()}
+class Planeta() {
+    fun temp_ideal(): Boolean {TODO()}
+    var fue_aterrizado : Boolean = false
+    fun radiacion():Double{TODO()}
 }
 
-class Piloto(salario_base: Double) : Tripulante(salario_base) {
-    override fun bonus_salario(): Double {super.salario_base * 0.3}
+class Nave() {
+    fun es_moderna():Boolean{TODO()}
 }
 
-class Ingeniero() : Tripulante() {
-    override fun bonus_salario(): Double { TODO("Not yet implemented") }
+// --------------------------------------------------------------------------------------
+
+data class DatosTripulante(
+    var nombre: String,
+    var apellido: String,
+    val fecha_nacimiento: LocalDate,
+    var misiones_exitosas: Int,
+    var misiones_parcialmente_exitosas: Int,
+    var misiones_fracasadas: Int,
+    var fecha_inicio_actividad: LocalDate,
+    var salario_base: Double
+){}
+
+abstract class Tripulante(open var data : DatosTripulante) {
+    var nombre = data.nombre
+    var apellido = data.apellido
+    val fecha_nacimiento = data.fecha_nacimiento
+    val misiones_exitosas = data.misiones_exitosas
+    var misiones_parcialmente_exitosas = data.misiones_parcialmente_exitosas
+    var misiones_fracasadas = data.misiones_fracasadas
+    var fecha_inicio_actividad = data.fecha_inicio_actividad
+    var salario_base = data.salario_base
+
+    lateinit var mision : Mision
+    lateinit var aptitud : Aptitud
+
+    fun anios_actividad(): Int {return Period.between(fecha_inicio_actividad, LocalDate.now()).years}
+    fun experiencia():Int{return anios_actividad()+(misiones_exitosas/2)+(misiones_fracasadas/2)+(misiones_parcialmente_exitosas/4)}
+    fun salario():Double{return salario_base + bonus_salario()}
+    abstract fun bonus_salario():Double
 }
 
-class Cientifico() : Tripulante() {
-    override fun bonus_salario(): Double { TODO("Not yet implemented") }
+class Comandante(override var data:DatosTripulante) : Tripulante(data) {
+    override fun bonus_salario(): Double {return salario_base*0.5 + (salario_base*0.05)*misiones_exitosas}
 }
 
-class Medico() : Tripulante() {
-    override fun bonus_salario(): Double { TODO("Not yet implemented") }
+class Piloto(override var data : DatosTripulante) : Tripulante(data){
+    override fun bonus_salario(): Double {return salario_base*0.3}
 }
 
-abstract class Perfil_aptitud() { // O podria ser una interfaz, no lo se
-    open fun cumple_conidicion_perfil() : Boolean {TODO("Not yet implemented")}
+class Ingeniero(override var data : DatosTripulante) : Tripulante(data){
+    override fun bonus_salario(): Double {TODO()}
 }
 
-open class Aptitud() {
-    abstract class cumple_condiciones()
+class Cientifico(override var data : DatosTripulante) : Tripulante(data){
+    override fun bonus_salario(): Double {TODO()}
 }
 
-class Conformista() : Aptitud() {
-    fun cumple_condiciones() : Boolean {return true}
+class Medico(override var data : DatosTripulante) : Tripulante(data){
+    override fun bonus_salario(): Double {TODO()}
 }
 
-class Prudente : Aptitud() {
-    fun cumple_condiciones(): Boolean {return planeta_asignado.temperatura_ideal() && planeta_asignado.gravedad_soportable()}
+interface Aptitud {
+    fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean
 }
 
-class Explorador() : Aptitud() {
-    fun cumple_condiciones(): Boolean {return planeta_asignado.fue_aterrizado()}
+class Conformista() : Aptitud {
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean {return true}
 }
 
-class Veterano() : Aptitud() {
-    fun cumple_condiciones(): Boolean {mision_asignada.duracion_estimada() <= maximo_dias}
+class Prudente() : Aptitud {
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean {return planeta.temp_ideal()}
 }
 
-class Cauteloso() : Aptitud() {
-    fun cumple_condiciones() : Boolean {planeta_asignado.radiacion() < umbral}
+class Explorador() : Aptitud {
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean {return planeta.fue_aterrizado}
 }
 
-class Exigente() : Aptitud() {
-    fun cumple_condiciones() : Boolean {nave_asignada.es_moderna()}
+class Veterano(var maximo_dias:Int) : Aptitud {
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean {return mision.duracion_estimada < maximo_dias}
+}
+
+class Cauteloso(var umbral:Double) : Aptitud {
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean {return planeta.radiacion() < umbral}
+}
+
+class Exigente() : Aptitud {
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean {return nave.es_moderna()}
 }

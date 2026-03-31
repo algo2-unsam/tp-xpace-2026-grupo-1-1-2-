@@ -3,6 +3,7 @@ import java.time.LocalDate
 import java.time.Period
 import kotlin.properties.Delegates
 
+/*
 class Mision() {
     var en_curso: Boolean = false
     lateinit var planeta_asignado : Planeta
@@ -10,18 +11,9 @@ class Mision() {
     fun tiene_grav_soportable():Boolean {TODO()}
     var duracion_estimada by Delegates.notNull<Int>()
 }
+*/
 
 class BaseLanzamiento() {
-}
-
-class Planeta() {
-    fun temp_ideal(): Boolean {TODO()}
-    var fue_aterrizado : Boolean = false
-    fun radiacion():Double{TODO()}
-}
-
-class Nave() {
-    fun es_moderna():Boolean{TODO()}
 }
 
 // --------------------------------------------------------------------------------------
@@ -49,19 +41,25 @@ abstract class Tripulante(open var data : DatosTripulante) {
 
     lateinit var mision : Mision
     lateinit var aptitud : Aptitud
+    lateinit var nave : Nave
 
-    fun anios_actividad(): Int {return Period.between(fecha_inicio_actividad, LocalDate.now()).years}
-    fun experiencia():Int{return anios_actividad()+(misiones_exitosas/2)+(misiones_fracasadas/2)+(misiones_parcialmente_exitosas/4)}
-    fun salario():Double{return salario_base + bonus_salario()}
+    val misiones_asignadas = mutableSetOf(mision)
+
+    fun anios_actividad(): Int = Period.between(fecha_inicio_actividad, LocalDate.now()).years
+    fun experiencia():Int = anios_actividad()+(misiones_exitosas/2)+(misiones_fracasadas/2)+(misiones_parcialmente_exitosas/4)
+    fun salario():Double = salario_base + bonus_salario()
     abstract fun bonus_salario():Double
+    fun es_apto(): Boolean = cumple_condiciones_base() && aptitud.cumple_condiciones(mision, mision.planeta, nave)
+    fun cumple_condiciones_base(): Boolean = experiencia() >= 3 && !mision_en_curso()
+    fun mision_en_curso() : Boolean = misiones_asignadas.any({it -> it.en_curso})
 }
 
 class Comandante(override var data:DatosTripulante) : Tripulante(data) {
-    override fun bonus_salario(): Double {return salario_base*0.5 + (salario_base*0.05)*misiones_exitosas}
+    override fun bonus_salario(): Double = salario_base*0.5 + (salario_base*0.05)*misiones_exitosas
 }
 
 class Piloto(override var data : DatosTripulante) : Tripulante(data){
-    override fun bonus_salario(): Double {return salario_base*0.3}
+    override fun bonus_salario(): Double = salario_base*0.3
 }
 
 class Ingeniero(override var data : DatosTripulante) : Tripulante(data){
@@ -81,25 +79,25 @@ interface Aptitud {
 }
 
 class Conformista() : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean {return true}
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean = true
 }
 
 class Prudente() : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean {return planeta.temp_ideal()}
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean = planeta.temp_ideal()
 }
 
 class Explorador() : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean {return planeta.fue_aterrizado}
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean = planeta.fue_aterrizado
 }
 
 class Veterano(var maximo_dias:Int) : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean {return mision.duracion_estimada < maximo_dias}
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean = mision.duracion_estimada < maximo_dias
 }
 
 class Cauteloso(var umbral:Double) : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean {return planeta.radiacion() < umbral}
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean = planeta.radiacion < umbral
 }
 
 class Exigente() : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean {return nave.es_moderna()}
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean = nave.es_moderna()
 }

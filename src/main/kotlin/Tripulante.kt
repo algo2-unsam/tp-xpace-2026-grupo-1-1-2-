@@ -3,21 +3,6 @@ import java.time.LocalDate
 import java.time.Period
 import kotlin.properties.Delegates
 
-/*
-class Mision() {
-    var en_curso: Boolean = false
-    lateinit var planeta_asignado : Planeta
-    fun tiene_temp_ideal():Boolean {TODO()}
-    fun tiene_grav_soportable():Boolean {TODO()}
-    var duracion_estimada by Delegates.notNull<Int>()
-}
-*/
-
-class BaseLanzamiento() {
-}
-
-// --------------------------------------------------------------------------------------
-
 data class DatosTripulante(
     var nombre: String,
     var apellido: String,
@@ -54,6 +39,8 @@ abstract class Tripulante(open var data : DatosTripulante) {
     fun mision_en_curso() : Boolean = misiones_asignadas.any({it -> it.en_curso})
 }
 
+
+
 class Comandante(override var data:DatosTripulante) : Tripulante(data) {
     override fun bonus_salario(): Double = salario_base*0.5 + (salario_base*0.05)*misiones_exitosas
 }
@@ -74,6 +61,8 @@ class Medico(override var data : DatosTripulante) : Tripulante(data){
     override fun bonus_salario(): Double {TODO()}
 }
 
+
+
 interface Aptitud {
     fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean
 }
@@ -91,7 +80,7 @@ class Explorador() : Aptitud {
 }
 
 class Veterano(var maximo_dias:Int) : Aptitud {
-    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean = mision.duracion_estimada < maximo_dias
+    override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave): Boolean = mision.duracion_estimada() < maximo_dias
 }
 
 class Cauteloso(var umbral:Double) : Aptitud {
@@ -101,3 +90,7 @@ class Cauteloso(var umbral:Double) : Aptitud {
 class Exigente() : Aptitud {
     override fun cumple_condiciones(mision:Mision, planeta:Planeta, nave:Nave) : Boolean = nave.es_moderna()
 }
+
+/*
+    Implementar roles
+ */

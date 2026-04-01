@@ -32,6 +32,10 @@ class Misiones(
                 validarBaseYNave()
     }
 
+    fun validarBaseYNave(): Boolean {}
+
+    fun validarTripulacion(): Boolean {}
+
     fun lanzar() {
         if (puedeLanzarse()) {
             estado = EstadoMision.EN_CURSO
@@ -44,6 +48,7 @@ class Misiones(
         if (estado == EstadoMision.EN_CURSO) {
             estado = EstadoMision.COMPLETADA
             liberarNaveyTripulantes()
+            tripulanteAsig.forEach { it.sumaMisionExitosa() }
         }
     }
 
@@ -51,17 +56,21 @@ class Misiones(
         if (estado == EstadoMision.EN_CURSO) {
             estado = EstadoMision.FALLIDA
             liberarNaveyTripulantes()
+            tripulanteAsig.forEach { it.sumaMisionFallida() }
         }
     }
 
     fun cancelado() {
         if (estado == EstadoMision.EN_CURSO) {
             estado = EstadoMision.CANCELADA
+            if (altoRiesgo(planetaAsig, naveAsig)) {
+                tripulanteAsig.forEach { it.sumaMisionParcial() }
+            }
             liberarNaveyTripulantes()
         }
     }
 
-    fun liberarNaveyTripulantes() {
+    private fun liberarNaveyTripulantes() {
         if (estado == EstadoMision.EN_CURSO) {
             naveAsig.mision = false
             tripulanteAsig.forEach { it.misionActual = null }

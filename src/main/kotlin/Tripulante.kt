@@ -27,28 +27,79 @@ class Tripulante(
     var misionActual: Misiones? = null // Para saber si está ocupado
     val misionesCompletadas = mutableListOf<Misiones>()
 
-    fun experiencia():Int{
-        añosExp = añosActivo() + (misExitosa/2) + (misFallidas/2) + (misParcial/4)
+    fun experiencia(): Int {
+        añosExp = añosActivo() + (misExitosa / 2) + (misFallidas / 2) + (misParcial / 4)
         return añosExp
     }
+
     fun añosActivo(): Int {
         return Period.between(fechaInicio, LocalDate.now()).years
     }
-    fun sumaMisionExitosa(): Boolean{
+
+    fun sumaMisionExitosa(): Boolean {
         misExitosa += 1
         return true
     }
-    fun sumaMisionFallida(): Boolean{
+
+    fun sumaMisionFallida(): Boolean {
         misFallidas += 1
         return true
     }
-    fun sumaMisionParcial(): Boolean{
+
+    fun sumaMisionParcial(): Boolean {
         misParcial += 1
         return true
     }
 
-    fun condicionBase(): Boolean{
+    fun condicionBase(): Boolean {
         return (experiencia() > 3) && (misionActual == null)
+    }
+
+    fun porcentajeSalario(porcentaje: Double): Double {
+        return salarioBase * porcentaje
+    }
+}
+
+class Comandante(
+    var porcentajeBase: Double = 0.5,
+    var porcentajePlus: Double = 0.05
+) : Rol {
+    override fun CalcularBonus(tripulante: Tripulante): Double {
+        val base = tripulante.porcentajeSalario(porcentajeBase)
+        val extra = tripulante.porcentajeSalario(porcentajePlus) * tripulante.misExitosa
+        return base + extra
+    }
+}
+
+class Piloto(var porcentaje: Double = 0.3) : Rol {
+    override fun CalcularBonus(tripulante: Tripulante): Double {
+        return tripulante.porcentajeSalario(porcentaje)
+    }
+}
+
+class Ingeniero(
+    var porcentajeCarguero: Double = 0.4,
+    var porcentajeSinCarguero: Double = 0.2
+) : Rol {
+    override fun CalcularBonus(tripulante: Tripulante): Double {
+        val ultimaNave = tripulante.misionesCompletadas.lastOrNull()?.naveAsig
+        val porcentaje = if (ultimaNave is Carguero) porcentajeCarguero else porcentajeSinCarguero
+        return tripulante.porcentajeSalario(porcentaje)
+    }
+}
+
+class Cientifico(var porcentaje: Double = 0.10) : Rol {
+    override fun CalcularBonus(tripulante: Tripulante): Double {
+        return tripulante.porcentajeSalario(porcentaje) * tripulante.misExitosa //mision exitosa y planeta aterrizado no es lo mismo
+    }
+}
+
+class Medico(
+    var porcentaje: Double = 0.25,
+    var porcentajeAdicional: Double = 0.02
+) : Rol {
+    override fun CalcularBonus(tripulante: Tripulante): Double {
+        return tripulante.porcentajeSalario(porcentaje) + (tripulante.porcentajeSalario(porcentajeAdicional) * tripulante.misFallidas)
     }
 }
 
@@ -88,37 +139,4 @@ class Exigente : PerfilAptitud {
         return nave.esModerna()
     }
 }
-
-class Comandante : Rol {
-    override fun CalcularBonus(tripulante: Tripulante): Double {
-        return (tripulante.salarioBase * 0.5) + (tripulante.salarioBase * 0.05 * tripulante.misExitosa)
-    }
-}
-
-class Piloto : Rol {
-    override fun CalcularBonus(tripulante: Tripulante): Double {
-        return tripulante.salarioBase * 0.3
-    }
-}
-
-class Ingeniero : Rol {
-    override fun CalcularBonus(tripulante: Tripulante): Double {
-        val ultimaNave = tripulante.misionesCompletadas.lastOrNull()?.naveAsig
-        val porcentaje = if (ultimaNave is Carguero) 0.4 else 0.2
-        return tripulante.salarioBase * porcentaje
-    }
-}
-
-class Cientifico : Rol {
-    override fun CalcularBonus(tripulante: Tripulante): Double {
-        return tripulante.salarioBase * 0.10 * tripulante.misExitosa
-    }
-}
-
-class Medico : Rol {
-    override fun CalcularBonus(tripulante: Tripulante): Double {
-        return (tripulante.salarioBase * 0.25) + (tripulante.salarioBase * 0.02 * tripulante.misFallidas)
-    }
-}
-
 

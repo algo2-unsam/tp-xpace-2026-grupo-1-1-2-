@@ -13,7 +13,8 @@ abstract class Nave(
         open val consumo:Double
         ){
     var en_mision:Boolean=false
-    fun es_moderna() : Boolean = ChronoUnit.YEARS.between(fecha_fabricacion, LocalDate.now()) < 5
+    fun es_moderna() : Boolean = antiguedad() < 5
+    fun antiguedad() : Long = ChronoUnit.YEARS.between(fecha_fabricacion, LocalDate.now())
 }
 
 class Sonda(
@@ -57,7 +58,8 @@ class carguero (
 ) : Nave(nombre, id, fecha_fabricacion, velocidad_promedio, autonomia, consumo) {
     fun añadir(_carga:Double) {if(tiene_capacidad()) carga += _carga}
     fun tiene_capacidad() : Boolean = carga < capacidad
-    fun consumo() : Double = super.consumo + super.consumo * 0.05 * carga
+    fun consumo() : Double = (super.consumo + super.consumo * 0.05 * carga) * bonus_antiguedad()
+    fun bonus_antiguedad() : Double = if(antiguedad()>10) 1.2 else 1.0
 }
 
 /*

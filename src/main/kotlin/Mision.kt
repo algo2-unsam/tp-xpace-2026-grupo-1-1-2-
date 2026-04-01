@@ -15,7 +15,7 @@ class Mision(
     fun consumo_total() : Double = nave.consumo * planeta.distancia_tierra
     fun puede_alcanzar() : Boolean = planeta.distancia_tierra*365 / nave.velocidad_promedio*2 <= nave.autonomia
     fun tripulantes_son_aptos() : Boolean = tripulantes.any(predicate={it -> !it.es_apto()})
-    fun puede_lanzar() : Boolean = puede_alcanzar()
+    fun puede_lanzar() : Boolean = puede_alcanzar() // Quizas sea responsabilidad de Nave
 }
 
 /*

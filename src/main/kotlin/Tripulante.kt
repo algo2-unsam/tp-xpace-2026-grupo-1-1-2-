@@ -18,7 +18,7 @@ abstract class Tripulante(open var data : DatosTripulante) {
     var nombre = data.nombre
     var apellido = data.apellido
     val fecha_nacimiento = data.fecha_nacimiento
-    val misiones_exitosas = data.misiones_exitosas
+    var misiones_exitosas = data.misiones_exitosas
     var misiones_parcialmente_exitosas = data.misiones_parcialmente_exitosas
     var misiones_fracasadas = data.misiones_fracasadas
     var fecha_inicio_actividad = data.fecha_inicio_actividad
@@ -37,6 +37,9 @@ abstract class Tripulante(open var data : DatosTripulante) {
     fun es_apto(): Boolean = cumple_condiciones_base() && aptitud.cumple_condiciones(mision, mision.planeta, nave)
     fun cumple_condiciones_base(): Boolean = experiencia() >= 3 && !mision_en_curso()
     fun mision_en_curso() : Boolean = misiones_asignadas.any({it -> it.en_curso})
+    fun complear_mision() {misiones_exitosas += 1}
+    fun fallar_mision() {misiones_fracasadas += 1}
+    fun cancelar_mision() {misiones_parcialmente_exitosas += 1}
 }
 
 
@@ -92,5 +95,5 @@ class Exigente() : Aptitud {
 }
 
 /*
-    Implementar roles
+    Implementar roless
  */

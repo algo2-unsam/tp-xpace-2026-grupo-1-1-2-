@@ -18,7 +18,8 @@ class Tripulante(
     val fechaInicio: LocalDate,
     var rol: Rol,
     var perfil: PerfilAptitud,
-    val salarioBase: Double
+    val salarioBase: Double,
+    val baseAsignada: BaseLanzamiento
 ) {
     var misExitosa: Int = 0
     var misFallidas: Int = 0
@@ -57,6 +58,17 @@ class Tripulante(
 
     fun porcentajeSalario(porcentaje: Double): Double {
         return salarioBase * porcentaje
+    }
+
+    fun esApto(mision: Misiones): Boolean {//es apto si no está en otra misión, por ahora
+        return misionActual == null && perfil.cumpleCondiciones(this, mision, mision.planetaAsig, mision.naveAsig)
+    }
+
+    fun esValido(): Boolean {
+        return nombre.isNotBlank() &&
+                apellido.isNotBlank() &&
+                fechaNac.isBefore(LocalDate.now())
+        // 'rol' y 'baseAsignada' son obligatorios por constructor (no pueden ser null)
     }
 }
 

@@ -12,29 +12,47 @@ class Misiones(
     val fechaLanz: LocalDate,
     val naveAsig: Naves,
     val tripulanteAsig: MutableList<Tripulante> = mutableListOf(),
-    val planetaAsig: Planetas
+    val planetaAsig: Planetas,
+    val baseAsignada: BaseLanzamiento
 ) {
 
     var estado: EstadoMision = EstadoMision.BORRADOR
+
 
     fun duracion(): Int {
         return (planetaAsig.distTierra * 365 / naveAsig.velocidadProm) * 2
     }
 
-    fun altoRiesgo(planeta: Planetas, nave: Naves): Boolean {
-        return ((!planeta.tempIdeal()) && (!planeta.gravSoportable()) && (duracion(planeta, nave) > 500))
+    fun altoRiesgo(): Boolean {
+        return (!planetaAsig.tempIdeal()) &&
+                (!planetaAsig.gravSoportable()) &&
+                (duracion() > 500)
     }
 
     fun puedeLanzarse(): Boolean {
         return estado == EstadoMision.BORRADOR &&
+                nombre.isNotBlank() &&
+                fechaLanz.isAfter(LocalDate.now()) &&
                 naveAsig.alcanzaPlaneta(planetaAsig) &&
                 validarTripulacion() &&
                 validarBaseYNave()
     }
 
-    fun validarBaseYNave(): Boolean {}
+    fun validarBaseYNave(): Boolean {
+        val naveEnBase = naveAsig.baseActual == this.baseAsignada
 
-    fun validarTripulacion(): Boolean {}
+        // 2. Si hay tripulantes, todos deben pertenecer a la base de la misión
+        val tripulantesEnBase = tripulanteAsig.all { it.baseAsignada == this.baseAsignada }
+
+        return naveEnBase && tripulantesEnBase
+    }
+
+    fun validarTripulacion(): Boolean {
+        val todosAptos = tripulanteAsig.all { it.esApto(this) }
+        val capacidadOk = naveAsig.capacidadApta(tripulanteAsig.size)
+
+        return todosAptos && capacidadOk
+    }
 
     fun lanzar() {
         if (puedeLanzarse()) {
@@ -63,7 +81,7 @@ class Misiones(
     fun cancelado() {
         if (estado == EstadoMision.EN_CURSO) {
             estado = EstadoMision.CANCELADA
-            if (altoRiesgo(planetaAsig, naveAsig)) {
+            if (altoRiesgo()) {
                 tripulanteAsig.forEach { it.sumaMisionParcial() }
             }
             liberarNaveyTripulantes()
@@ -71,9 +89,7 @@ class Misiones(
     }
 
     private fun liberarNaveyTripulantes() {
-        if (estado == EstadoMision.EN_CURSO) {
             naveAsig.mision = false
-            tripulanteAsig.forEach { it.misionActual = null }
-        }
+            tripulanteAsig.forEach { it.misionActual = null}
     }
 }

@@ -22,4 +22,5 @@ class Planeta(
     fun es_habitable():Boolean = temp_ideal() && grav_soportable() && hay_agua_liquida && toxicidad_baja() && radiacion_baja()
     fun indice_peligrosidad():Double = (radiacion+toxicidad+actividad_tectonica)/3
     fun es_explorable():Boolean = !es_habitable() && indice_peligrosidad()<60
+    fun aterrizaje() {fue_aterrizado = !fue_aterrizado}
 }

@@ -37,7 +37,7 @@ abstract class Tripulante(open var data : DatosTripulante) {
     fun es_apto(): Boolean = cumple_condiciones_base() && aptitud.cumple_condiciones(mision, mision.planeta, nave)
     fun cumple_condiciones_base(): Boolean = experiencia() >= 3 && !mision_en_curso()
     fun mision_en_curso() : Boolean = misiones_asignadas.any({it -> it.en_curso})
-    fun complear_mision() {misiones_exitosas += 1}
+    fun completar_mision() {misiones_exitosas += 1}
     fun fallar_mision() {misiones_fracasadas += 1}
     fun cancelar_mision() {misiones_parcialmente_exitosas += 1}
 }
@@ -57,11 +57,11 @@ class Ingeniero(override var data : DatosTripulante) : Tripulante(data){
 }
 
 class Cientifico(override var data : DatosTripulante) : Tripulante(data){
-    override fun bonus_salario(): Double {TODO()}
+    override fun bonus_salario(): Double = salario_base*0.1 * misiones_asignadas.count({it->it.planeta.fue_aterrizado})
 }
 
 class Medico(override var data : DatosTripulante) : Tripulante(data){
-    override fun bonus_salario(): Double {TODO()}
+    override fun bonus_salario(): Double = return super.salario_base * 0.25 + super.salario_base*0.02 * misiones_fracasadas
 }
 
 

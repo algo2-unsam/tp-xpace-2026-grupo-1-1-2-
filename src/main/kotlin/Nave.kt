@@ -15,6 +15,9 @@ abstract class Nave(
     var en_mision:Boolean=false
     fun es_moderna() : Boolean = antiguedad() < 5
     fun antiguedad() : Long = ChronoUnit.YEARS.between(fecha_fabricacion, LocalDate.now())
+    open fun consumo_anios_luz() : Double {return consumo}
+    fun puede_alcanzar(distancia : Double) = distancia*365/velocidad_promedio*2 <= autonomia
+    open fun es_apta() : Boolean = true
 }
 
 class Sonda(
@@ -28,7 +31,7 @@ class Sonda(
 
 }
 
-class Transbordador (
+abstract  class Transbordador (
     override var nombre:String,
     override val id:Int,
     override val fecha_fabricacion:LocalDate,
@@ -42,11 +45,11 @@ class Transbordador (
     fun carga() = tripulantes.size
     fun añadir(tripulante:Tripulante) {if(tiene_capacidad()) tripulantes.add(tripulante)}
     fun tiene_capacidad() : Boolean = carga() < capacidad
-    fun consumo() : Double =  super.consumo + (super.consumo*0.1)*carga()
-    fun es_apto() : Boolean = TODO()
-    }
+    override fun consumo_anios_luz() : Double =  super.consumo + (super.consumo*0.1)*carga()
+    override fun es_apta() : Boolean = tiene_capacidad()
+}
 
-class carguero (
+class Carguero (
     override var nombre:String,
     override val id:Int,
     override val fecha_fabricacion:LocalDate,
@@ -56,10 +59,10 @@ class carguero (
     val capacidad : Double,
     var carga : Double = 0.0
 ) : Nave(nombre, id, fecha_fabricacion, velocidad_promedio, autonomia, consumo) {
-    fun añadir(_carga:Double) {if(tiene_capacidad()) carga += _carga}
-    fun tiene_capacidad() : Boolean = carga < capacidad
-    fun consumo() : Double = (super.consumo + super.consumo * 0.05 * carga) * bonus_antiguedad()
-    fun bonus_antiguedad() : Double = if(antiguedad()>10) 1.2 else 1.0
+    fun añadir(_carga: Double)  { if (tiene_capacidad()) carga += _carga }
+    fun tiene_capacidad(): Boolean = carga < capacidad
+    override fun consumo_anios_luz(): Double = (super.consumo + super.consumo * 0.05 * carga) * bonus_antiguedad()
+    fun bonus_antiguedad(): Double = if (antiguedad() > 10) 1.2 else 1.0
 }
 
 /*

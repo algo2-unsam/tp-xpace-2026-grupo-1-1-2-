@@ -8,7 +8,6 @@ import java.time.LocalDate
 
 class MisionesSpec : DescribeSpec({
 
-    // --- SETUP DE OBJETOS DE PRUEBA (Fakes) ---
     val baseKennedy = BaseLanzamiento()
     val baseRusa = BaseLanzamiento()
 
@@ -27,20 +26,18 @@ class MisionesSpec : DescribeSpec({
         temperatura = 25
     )
 
-    // Roles y Perfiles para los tripulantes
     val unRol = Piloto()
     val unPerfil = Conformista()
 
     describe("Validación de Misiones (XPACE)") {
 
         it("No debería lanzarse una misión si la nave no tiene autonomía suficiente") {
-            // Bajamos la velocidad a 10 para que tarde mucho más en llegar
             val naveDebil = Sonda(
                 nombre = "Sputnik",
                 ID = 101,
                 fechaFab = LocalDate.now().minusYears(2),
-                velocidadProm = 10, // <--- Velocidad lenta
-                autonomia = 5,      // <--- Autonomía muy baja
+                velocidadProm = 10,
+                autonomia = 5,
                 consumoBase = 1.0,
                 baseActual = baseKennedy
             )
@@ -55,9 +52,6 @@ class MisionesSpec : DescribeSpec({
                 baseAsignada = baseKennedy
             )
 
-            // Ahora la cuenta es: (100 * 2 / 10) = 20.
-            // Como 20 NO es <= 5, alcanzaPlaneta() dará FALSE.
-            // Entonces puedeLanzarse() dará FALSE, y el test dará VERDE.
             mision.puedeLanzarse().shouldBeFalse()
         }
 
@@ -74,14 +68,13 @@ class MisionesSpec : DescribeSpec({
                 sonda, mutableListOf(neil), marte, baseKennedy
             )
 
-            // Falla porque Sonda hereda de Nave con capacidad 0
+
             misionConGente.puedeLanzarse().shouldBeFalse()
         }
 
         it("La misión falla si la nave está en una base y los tripulantes en otra") {
             val naveEnKennedy = Transbordador("Discovery", 303, LocalDate.now(), 100, 5000, 10.0, 5, baseKennedy)
 
-            // Tripulante asignado a base Rusa
             val tripulanteRuso = Tripulante(
                 "Yuri", "Gagarin", LocalDate.of(1934, 3, 9), LocalDate.now().minusYears(5),
                 unRol, unPerfil, 4000.0, baseRusa
@@ -92,7 +85,6 @@ class MisionesSpec : DescribeSpec({
                 naveEnKennedy, mutableListOf(tripulanteRuso), marte, baseKennedy
             )
 
-            // Falla porque el tripulante no pertenece a la base de la misión (Kennedy)
             misionEnKennedy.puedeLanzarse().shouldBeFalse()
         }
 

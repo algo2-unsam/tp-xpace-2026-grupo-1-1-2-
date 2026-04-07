@@ -1,17 +1,14 @@
-name: Test and Build
+name: Run tests
 
 on:
   push:
   pull_request:
 
-permission:
-  contents: read
-
 jobs:
-  tests:
-    run-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest
 
-    stps:
+    steps:
       - name: Descargar codigo
         uses: actions/checkout@v4
 
@@ -21,7 +18,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Dar permisos a Gradel
+      - name: Dar permisos a Gradle
         run: chmod +x gradlew
 
       - name: Ejecutar tests

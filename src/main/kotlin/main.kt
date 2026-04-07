@@ -5,11 +5,18 @@ import org.uqbar.geodds.Point
 import java.math.BigDecimal
 
 // geo soporte
-data class Point(val x: BigDecimal, val y: BigDecimal) {
+fun main() {
+    println("Hola mundo")
+
+    val planeta = Planeta("Marte", 20, 9.8, 10, true, 10, 5, 0.5)
+    println(planeta.esHabitable())
+} //sino no me corria??????
+
+/*data class Point(val x: BigDecimal, val y: BigDecimal) {
     fun distance(anotherPoint: Point): Double =
         Math.sqrt(Math.pow(anotherPoint.x.toDouble() - x.toDouble(), 2.0) +
                 Math.pow(anotherPoint.y.toDouble() - y.toDouble(), 2.0))
-}
+} */ //no es necesario porque ya esta importado en el org.uqbar.geodds.Point
 
 // roles y aptitudes
 
@@ -95,10 +102,10 @@ class ExigenteConNave : PerfilAptitud {
 
 class Tripulante(
 
-    val nombre: String,
-    val apellido: String,
-    val fechaNac: LocalDate,
-    val fechaInicio: LocalDate,
+    val nombre: String = "Nico",
+    val apellido: String = "Perez",
+    val fechaNac: LocalDate = LocalDate.of(1980, 11, 23),
+    val fechaInicio: LocalDate = LocalDate.now(),
     var salarioBase: Double,
     var rol: Rol,
     var perfil: PerfilAptitud,
@@ -140,14 +147,14 @@ class Tripulante(
 */
 
 class Planeta(
-    val nombre: String,
-    val temperatura: Int,
-    val gravedad: Double,
-    val nivelRad: Int,
-    val aguaLiquida: Boolean,
-    val toxicidadAtmos: Int,
-    val actTectonica: Int,
-    val distTierra: Double // En años luz
+    val nombre: String = "Marte",
+    val temperatura: Int = 63,
+    val gravedad: Double = 3.71,
+    val nivelRad: Int = 25,
+    val aguaLiquida: Boolean = false,
+    val toxicidadAtmos: Int = 95,
+    val actTectonica: Int = 0,
+    val distTierra: Double = 0.002// En años luz
 ) {
     var aterrizado: Boolean = false
 
@@ -155,17 +162,24 @@ class Planeta(
     fun gravSoportable(): Boolean = gravedad in 3.0..15.0
     fun esHabitable(): Boolean =
         tempIdeal() && gravSoportable() && aguaLiquida && toxicidadAtmos < 30 && nivelRad < 40
+
+    fun indicePeligrosidad() : Int = (nivelRad + toxicidadAtmos+ actTectonica ) /3
+
+    fun esExplorable(): Boolean {
+        return (indicePeligrosidad() < 60 && ! esHabitable())
+    }
+
 }
 
 // Naves
 
 abstract class Nave(
-    val nombre: String,
-    val codigo: String,
+    val nombre: String = "Atenea",
+    val codigo: String = "AD741",
     val fechaFab: LocalDate,
-    val velocidadProm: Double,
-    val autonomia: Double,
-    val consumoBase: Double
+    val velocidadProm: Double = 100.0,
+    val autonomia: Double = 500.0,
+    val consumoBase: Double = 10.0
 ) {
     var enMision: Boolean = false
 
@@ -242,3 +256,12 @@ class BaseLanzamiento(
 ) {
     val navesEstacionadas = mutableListOf<Nave>()
 }
+
+
+class Direccion(
+    val pais : String,
+    val ciudad : String,
+    val calle : String,
+    val altura : Int,
+    val ubiGeo : Point,
+){}

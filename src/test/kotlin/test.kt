@@ -1,54 +1,63 @@
-import ar.edu.unsam.algo2.Pluton
-import ar.edu.unsam.algo2.Tripulante1
-import ar.edu.unsam.algo2.Transbordador
-import ar.edu.unsam.algo2.Carguero
-import ar.edu.unsam.algo2.Mision1
+package ar.edu.unsam.algo2
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import java.time.LocalDate
 
-class Test: DescribeSpec({
-    val mision = Mision1()
-    val planeta = Pluton()
-    val nave = Transbordador()
-    val nave2 = Carguero()
-    val tripulante = Tripulante1()
+class Test : DescribeSpec({
 
-    describe("Dado un planeta"){
-        planeta.gravedad shouldBe 6
-        planeta.tempIdeal() shouldBe true
-        planeta.gravSoportable() shouldBe true
+    // 1. SETUP (Juego de datos)
+    val comandante = Comandante()
+    val conformista = Conformista()
+    val base = BaseLanus()
+
+    val tripulante1 = Tripulante("Nico", "Perez", 10.0, comandante, conformista).apply {
+        baseAsignada = base
     }
-    describe("Dado un tripulante"){
-        tripulante.misExitosa shouldBe 10
-        tripulante.experiencia() shouldBe 37
-        tripulante.añosActivo() shouldBe 26
+
+    val planeta = Pluton() // distTierra = 2.0
+
+    val naveTransbordador = Transbordador(cons = 10.0)
+    val naveCarguero = Carguero(cons = 10.0)
+
+    val mision = Mision().apply {
+        this.nave = naveTransbordador
+        this.planeta = planeta
+        this.tripulantes.add(tripulante1)
     }
-    describe("Dada una nave"){
-        nave.alcanzaPlaneta(planeta) shouldBe true //la nave Transbordador puede alcanzar pluton
-        nave.esModerna() shouldBe true
-        nave2.esModerna() shouldBe false
+
+    describe("Pruebas de NAVE") {
+        it("El carguero debería dar 13.2") {
+            naveCarguero.cuantoConsume(planeta, 2) shouldBe 13.2
+        }
+
+        it("El transbordador debería dar 22.0") {
+            naveTransbordador.consumoTotal(planeta, 1) shouldBe 22.0
+        }
     }
-    describe("Dada una mision"){
-        //verifico las misiones exitosas y fallidad del Tripulante1, el Transbordador no esta en mision y Pluton no fue aterrizado
-        mision.duracion(planeta, nave) shouldBe 292
-        tripulante.misExitosa shouldBe 10
-        tripulante.misFallidas shouldBe 6
-        nave.mision shouldBe false
-        planeta.aterrizado shouldBe false
 
-        //hago que la Mision1 vaya a Pluton con el Transbordador y el Tripulante1. Falla por lo cual se le suma 1 mision fallida y Transbordador no esta en mision
-        mision.Borrador_A_EnCurso(nave, planeta, tripulante) shouldBe false
-        tripulante.misFallidas shouldBe 7
-        nave.mision shouldBe false
+    describe("Pruebas de MISION") {
+        it("Debería completar el ciclo de vida correctamente") {
 
-        //hago que la Mision1 vaya a Pluton con el Carguero y el Tripulante1. No falla por lo cual el Carguero esta en mision
-        mision.Borrador_A_EnCurso(nave2, planeta, tripulante) shouldBe true
-        nave2.mision shouldBe true
+            base.navesEstacionadas.add(naveTransbordador)
+            tripulante1.baseAsignada = base
+            mision.nave = naveTransbordador
+            mision.tripulantes.clear()
+            mision.tripulantes.add(tripulante1)
 
-        //la Mision1 se completa, se le suma 1 mision exitosa al Tripulante 1 y Pluton fue aterrizado
-        //mision.EnCurso_A_Completada(planeta,tripulante) shouldBe true
-        //tripulante.misExitosa shouldBe 11
-        //planeta.aterrizado shouldBe true
+            mision.estado shouldBe EstadoMision.BORRADOR
+
+            mision.lanzar() shouldBe true
+            mision.estado shouldBe EstadoMision.EN_CURSO
+
+            mision.completar() shouldBe true
+            mision.estado shouldBe EstadoMision.COMPLETADA
+
+            tripulante1.misExitosa shouldBe 2
+        }
+
+        it("Una misión nueva a Plutón no debería ser de alto riesgo") {
+            mision.altoRiesgo() shouldBe false
+        }
     }
 })

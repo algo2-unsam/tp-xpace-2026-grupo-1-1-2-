@@ -4,21 +4,15 @@ import java.time.Period
 import org.uqbar.geodds.Point
 import java.math.BigDecimal
 
-// geo soporte
+/*
 fun main() {
     println("Hola mundo")
 
     val planeta = Planeta("Marte", 20, 9.8, 10, true, 10, 5, 0.5)
     println(planeta.esHabitable())
 } //sino no me corria??????
+*/
 
-/*data class Point(val x: BigDecimal, val y: BigDecimal) {
-    fun distance(anotherPoint: Point): Double =
-        Math.sqrt(Math.pow(anotherPoint.x.toDouble() - x.toDouble(), 2.0) +
-                Math.pow(anotherPoint.y.toDouble() - y.toDouble(), 2.0))
-} */ //no es necesario porque ya esta importado en el org.uqbar.geodds.Point
-
-// roles y aptitudes
 
 interface Rol {
     fun calcularBonus(tripulante: Tripulante): Double
@@ -26,11 +20,12 @@ interface Rol {
 
 class Comandante : Rol {
     override fun calcularBonus(tripulante: Tripulante): Double =
-        (tripulante.salarioBase * 0.50) +(tripulante.misExitosa *(tripulante.salarioBase * 0.05) )//optimizar tripulante.salarioBase, hay una mejor manera. metodo
+        (tripulante.salarioBase * 0.50) +(tripulante.misExitosa *(tripulante.salarioBase * 0.05) )
 }
 
 class Piloto : Rol {
-    override fun calcularBonus(tripulante: Tripulante): Double = tripulante.salarioBase * 0.30
+    override fun calcularBonus(tripulante: Tripulante): Double =
+        tripulante.salarioBase * 0.30
 }
 
 class Ingeniero(val ultimaMisionFueCarguero: Boolean) : Rol {
@@ -91,137 +86,153 @@ class ExigenteConNave : PerfilAptitud {
     }
 }
 
-// clase tripulante
-
-/*
-   abstract class Tripulante { ... }
-   class Tripulante1 : Tripulante() { ... }
-
-   tripulante recibe sus datos por constructor.
-*/
-
 class Tripulante(
-
-    val nombre: String = "Nico",
-    val apellido: String = "Perez",
-    val fechaNac: LocalDate = LocalDate.of(1980, 11, 23),
-    val fechaInicio: LocalDate = LocalDate.now(),
-    var salarioBase: Double,
-    var rol: Rol,
-    var perfil: PerfilAptitud,
-    var baseAsignada: BaseLanzamiento
+    val nombre: String = "",
+    val apellido: String = "",
+    var salarioBase: Double = 10.0,
+    var rol: Rol = Comandante(),
+    var perfil: PerfilAptitud = Conformista()
 ) {
-    /*init {
-        require(nombre.isNotBlank()) { "nombre vacío" }
-        require(apellido.isNotBlank()) { "apellido vacío" }
-        require(fechaNac.isBefore(LocalDate.now())) { "fecha de nacimiento erronea" }
-    }eliminar*/
-    var misExitosa: Int = 0
+    val fechaNac: LocalDate = LocalDate.of(1980, 11, 23)
+    val fechaInicio: LocalDate = LocalDate.of(2000, 1, 1)
+    var baseAsignada: BaseLanzamiento = BaseLanus()
+    var misExitosa: Int = 1
     var misFallidas: Int = 0
     var misParcial: Int = 0
-    var misionActual: Mision? = null //
+    var misionActual: Mision? = null
+    var añosActivo = Period.between(fechaInicio, LocalDate.now()).years
 
-    fun experiencia(): Int {
-        val añosActivo = Period.between(fechaInicio, LocalDate.now()).years
-        return añosActivo + (misExitosa / 2) + (misFallidas / 2) + (misParcial / 4)
-    }
+    fun experiencia(): Int = añosActivo + (misExitosa / 2) + (misFallidas / 2) + (misParcial / 4)
 
-    // validación de aptitud
     fun esAptoPara(mision: Mision): Boolean =
         experiencia() >= 3 && misionActual == null && perfil.esApto(this, mision)
 
     fun salarioTotal(): Double = salarioBase + rol.calcularBonus(this)
 
-
-    fun consideraCercana(otraBase: BaseLanzamiento, kmMaximos: Double): Boolean {
-        return this.baseAsignada.ubicacion.distance(otraBase.ubicacion) <= kmMaximos
+    fun baseCercana(otraBase: BaseLanzamiento, kmMaximos: Double): Boolean {
+        return baseAsignada.direccion.ubiGeo.distance(otraBase.direccion.ubiGeo) <= kmMaximos
     }
 }
 
-// pLANETAS
-
-/*
-   abstract class Planetas { ... }
-   class Pluton : Planetas() { ... }
-
-*/
-
-class Planeta(
-    val nombre: String = "Marte",
-    val temperatura: Int = 63,
-    val gravedad: Double = 3.71,
-    val nivelRad: Int = 25,
-    val aguaLiquida: Boolean = false,
-    val toxicidadAtmos: Int = 95,
-    val actTectonica: Int = 0,
-    val distTierra: Double = 0.002// En años luz
+abstract class Planeta(
+    open val nombre: String = "",
+    open val temperatura: Int = 63,
+    open val gravedad: Double = 3.71,
+    open val nivelRad: Int = 25,
+    open val aguaLiquida: Boolean = false,
+    open val toxicidadAtmos: Int = 95,
+    open val actTectonica: Int = 0,
+    open val tamano: Int = 25,
+    open val fechaDesc: LocalDate = LocalDate.of(1990, 1, 1),
+    open val distTierra: Double = 2.0// En años luz
 ) {
     var aterrizado: Boolean = false
 
     fun tempIdeal(): Boolean = temperatura in 0..40
+
     fun gravSoportable(): Boolean = gravedad in 3.0..15.0
+
     fun esHabitable(): Boolean =
         tempIdeal() && gravSoportable() && aguaLiquida && toxicidadAtmos < 30 && nivelRad < 40
 
     fun indicePeligrosidad() : Int = (nivelRad + toxicidadAtmos+ actTectonica ) /3
 
     fun esExplorable(): Boolean {
-        return (indicePeligrosidad() < 60 && ! esHabitable())
+        return (indicePeligrosidad() < 60 && !esHabitable())
     }
-
 }
-
-// Naves
+class Pluton: Planeta() {
+    override val nombre = "Pluton"
+}
 
 abstract class Nave(
     val nombre: String = "Atenea",
     val codigo: String = "AD741",
-    val fechaFab: LocalDate,
+    val fechaFab: LocalDate = LocalDate.of(1990, 1, 1),
     val velocidadProm: Double = 100.0,
     val autonomia: Double = 500.0,
-    val consumoBase: Double = 10.0
+    var consumoBase: Double = 5.1
 ) {
-    var enMision: Boolean = false
+    var enMision: Boolean = false // Por defecto debería ser false al crearla
 
-    fun antiguedad(): Int = Period.between(fechaFab, LocalDate.now()).years
-    fun esModerna(): Boolean = antiguedad() < 5
+    // Propiedad calculada: se actualiza sola cada vez que la usás
+    val antiguedad: Int get() = Period.between(fechaFab, LocalDate.now()).years
 
-    // es *2
+    fun esModerna(): Boolean = antiguedad < 5
+
     fun puedeAlcanzar(planeta: Planeta): Boolean =
         (planeta.distTierra * 365 / velocidadProm * 2) <= autonomia
 
-    abstract fun consumoTotal(planeta: Planeta, tripulantes: Int, carga: Double): Double // ver como delegar a clases concretas
+    // Usamos 'unidades' para evitar el warning de nombres distintos entre tripulantes y carga
+    abstract fun cuantoConsume(planeta: Planeta, unidades: Int): Double
+
+    fun consumoTotal(planeta: Planeta, unidades: Int): Double {
+        return cuantoConsume(planeta, unidades) * planeta.distTierra
+    }
+
+    fun esValida(): Boolean =
+        nombre.isNotBlank() &&
+                codigo.isNotBlank() &&
+                velocidadProm > 0 &&
+                autonomia > 0 &&
+                consumoBase > 0
+
+}
+
+class Sonda(
+    nombre: String = "Sonda",
+    codigo: String = "S-001",
+    fechaFab: LocalDate = LocalDate.of(2000, 1, 1),
+    vel: Double = 100.0,
+    aut: Double = 500.0,
+    cons: Double = 10.0
+) : Nave(nombre, codigo, fechaFab, vel, aut, cons) {
+    override fun cuantoConsume(planeta: Planeta, unidades: Int): Double = consumoBase
 }
 
 class Transbordador(
-    nombre: String, codigo: String, fechaFab: LocalDate, vel: Double, aut: Double, cons: Double,
-    val capacidadMax: Int
+    nombre: String = "Transbordador",
+    codigo: String = "S-002",
+    fechaFab: LocalDate = LocalDate.of(1990, 1, 1),
+    vel: Double = 100.0,
+    aut: Double = 500.0,
+    cons: Double = 10.0,
+    val capacidadMax: Int = 5
 ) : Nave(nombre, codigo, fechaFab, vel, aut, cons) {
 
-    /* val tripulantes = 6 */
-
-    override fun consumoTotal(planeta: Planeta, tripulantes: Int, carga: Double): Double {
-        val consumoPorViaje = consumoBase + (consumoBase * 0.10 * tripulantes)
-        return consumoPorViaje * planeta.distTierra
+    override fun cuantoConsume(planeta: Planeta, unidades: Int): Double {
+        return consumoBase + (consumoBase * 0.10 * unidades)
     }
 }
 
-// mision es
+class Carguero(
+    nombre: String = "Carguero",
+    codigo: String = "S-003",
+    fechaFab: LocalDate = LocalDate.of(1990, 1, 1),
+    vel: Double = 100.0,
+    aut: Double = 500.0,
+    cons: Double = 10.0
+) : Nave(nombre, codigo, fechaFab, vel, aut, cons) {
 
-/*
-   open var estado: Int = 0 */
+    override fun cuantoConsume(planeta: Planeta, unidades: Int): Double {
+        val consumoConCarga = consumoBase + (consumoBase * 0.05 * unidades)
+        return if (antiguedad > 10) consumoConCarga * 1.20 else consumoConCarga
+    }
+}
 
 enum class EstadoMision { BORRADOR, EN_CURSO, COMPLETADA, FALLIDA, CANCELADA }
 
 class Mision(
-    val nombre: String,
-    val planeta: Planeta,
-    var nave: Nave,
-    val tripulantes: MutableList<Tripulante> = mutableListOf()
+    val nombre: String="Mision1",
+    val descripcion: String="Mision1",
+    val fechaLanz: LocalDate = LocalDate.of(2027, 1, 1)
 ) {
+    var tripulantes: MutableList<Tripulante> = mutableListOf()
+    var nave: Nave= Transbordador()
+    var planeta: Planeta= Pluton()
     var estado: EstadoMision = EstadoMision.BORRADOR
 
-    fun lanzar() {
+    fun lanzar(): Boolean {
         val mismaBaseYNaveEnBase = if (tripulantes.isNotEmpty()) {
             val baseComun = tripulantes.first().baseAsignada
             tripulantes.all { it.baseAsignada == baseComun } && baseComun.navesEstacionadas.contains(nave)
@@ -230,38 +241,75 @@ class Mision(
         val condiciones = estado == EstadoMision.BORRADOR &&
                 nave.puedeAlcanzar(planeta) &&
                 tripulantes.all { it.esAptoPara(this) } &&
-                verificarCapacidadNave() &&
-                mismaBaseYNaveEnBase // <--- Nuevo chequeo
+                capacidadValida() &&
+                mismaBaseYNaveEnBase
 
         if (condiciones) {
             estado = EstadoMision.EN_CURSO
             nave.enMision = true
             tripulantes.forEach { it.misionActual = this }
+            return true
         }
+        return false
+    }
+    fun completar(): Boolean {
+        if (estado == EstadoMision.EN_CURSO) {
+            estado = EstadoMision.COMPLETADA
+            planeta.aterrizado = true
+            tripulantes.forEach {
+                it.misExitosa += 1
+                it.misionActual = null // Liberamos al tripulante
+            }
+            nave.enMision = false
+            return true
+        }
+        return false
     }
 
-    private fun verificarCapacidadNave(): Boolean {
-        return if (nave is Transbordador) tripulantes.size <= (nave as Transbordador).capacidadMax else true
+    fun fallar(): Boolean {
+        estado = EstadoMision.FALLIDA
+        tripulantes.forEach {it.misFallidas+=1}
+        nave.enMision = false
+        return true
     }
-    fun duracionEstimada(): Double {
-        // dis * 365 / vel* 2
-        return (planeta.distTierra * 365 / nave.velocidadProm) * 2
+    fun cancelar(): Boolean {
+        if (estado == EstadoMision.EN_CURSO && altoRiesgo()){
+            estado = EstadoMision.CANCELADA
+            nave.enMision = false
+            tripulantes.forEach {it.misParcial+=1}
+            return true
+        }
+        return false
     }
+
+    fun capacidadValida(): Boolean {
+        return if (nave is Transbordador) {
+            tripulantes.size <= (nave as Transbordador).capacidadMax
+        } else true
+    }
+
+    fun duracionEstimada(): Double = (planeta.distTierra * 365 / nave.velocidadProm) * 2
+
+    fun altoRiesgo(): Boolean = !planeta.esHabitable() && duracionEstimada() > 500
 }
 
-class BaseLanzamiento(
-    val nombre: String,
-    val ubicacion: Point,
-    val capacidadMax: Int
-) {
+abstract class BaseLanzamiento() {
+    open val nombre: String = ""
+    val direccion: Direccion = Direccion()
+    open val capacidadMax: Int = 10
+
     val navesEstacionadas = mutableListOf<Nave>()
 }
 
+class BaseLanus: BaseLanzamiento() {
+    override val nombre = "Base1"
+}
 
-class Direccion(
-    val pais : String,
-    val ciudad : String,
-    val calle : String,
-    val altura : Int,
-    val ubiGeo : Point,
-){}
+class Direccion(){
+    open val pais : String = ""
+    open val ciudad : String = ""
+    open val calle : String = ""
+    open val altura : Int = 0
+    open val ubiGeo : Point = Point(0, 0)
+
+}

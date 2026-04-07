@@ -1,29 +1,62 @@
 package ar.edu.unsam.algo2
+
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import java.time.LocalDate
 
 class Test : DescribeSpec({
 
-    //defino una variable para cada clase xq sino a veces fallan los test
-    val tripulante = Tripulante1()
-    val planeta = Pluton()
-    val sonda = Sonda()
-    val nave = Transbordador()
-    val nave2 = Carguero()
-    val mision = Mision1()
+    val comandante = Comandante()
+    val conformista = Conformista()
+    val base = BaseLanus()
 
-    describe("Dado un tripulante") {
-        it("cumple sus condiciones") {
-            tripulante.misExitosa shouldBe 10
-            tripulante.experiencia() shouldBe 37
-            tripulante.aniosActivo() shouldBe 26
+    val tripulante1 = Tripulante("Nico", "Perez", 10.0, comandante, conformista).apply {
+        baseAsignada = base
+    }
+
+    val planeta = Pluton() // distTierra = 2.0
+
+    val naveTransbordador = Transbordador(cons = 10.0)
+    val naveCarguero = Carguero(cons = 10.0)
+
+    val mision = Mision().apply {
+        this.nave = naveTransbordador
+        this.planeta = planeta
+        this.tripulantes.add(tripulante1)
+    }
+
+    describe("Pruebas de NAVE") {
+        it("El carguero debería dar 13.2") {
+            naveCarguero.cuantoConsume(planeta, 2) shouldBe 13.2
+        }
+
+        it("El transbordador debería dar 22.0") {
+            naveTransbordador.consumoTotal(planeta, 1) shouldBe 22.0
         }
     }
-    describe("Dado un planeta") {
-        it("cumple sus condiciones") {
-            planeta.gravedad shouldBe 6
-            planeta.tempIdeal() shouldBe true
-            planeta.gravSoportable() shouldBe true
+
+    describe("Pruebas de MISION") {
+        it("Debería completar el ciclo de vida correctamente") {
+
+            base.navesEstacionadas.add(naveTransbordador)
+            tripulante1.baseAsignada = base
+            mision.nave = naveTransbordador
+            mision.tripulantes.clear()
+            mision.tripulantes.add(tripulante1)
+
+            mision.estado shouldBe EstadoMision.BORRADOR
+
+            mision.lanzar() shouldBe true
+            mision.estado shouldBe EstadoMision.EN_CURSO
+
+            mision.completar() shouldBe true
+            mision.estado shouldBe EstadoMision.COMPLETADA
+
+            tripulante1.misExitosa shouldBe 2
+        }
+
+        it("Una misión nueva a Plutón no debería ser de alto riesgo") {
+            mision.altoRiesgo() shouldBe false
         }
     }
 })

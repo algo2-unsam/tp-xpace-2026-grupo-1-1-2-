@@ -153,9 +153,9 @@ abstract class Nave(
     val autonomia: Double = 500.0,
     var consumoBase: Double = 5.1
 ) {
-    var enMision: Boolean = false // Por defecto debería ser false al crearla
+    var enMision: Boolean = false
 
-    // Propiedad calculada: se actualiza sola cada vez que la usás
+
     val antiguedad: Int get() = Period.between(fechaFab, LocalDate.now()).years
 
     fun esModerna(): Boolean = antiguedad < 5
@@ -163,7 +163,7 @@ abstract class Nave(
     fun puedeAlcanzar(planeta: Planeta): Boolean =
         (planeta.distTierra * 365 / velocidadProm * 2) <= autonomia
 
-    // Usamos 'unidades' para evitar el warning de nombres distintos entre tripulantes y carga
+    // uso  'unidades' para evitar el warning de nombres distintos entre tripulantes y carga
     abstract fun cuantoConsume(planeta: Planeta, unidades: Int): Double
 
     fun consumoTotal(planeta: Planeta, unidades: Int): Double {

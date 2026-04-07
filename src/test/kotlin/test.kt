@@ -6,7 +6,6 @@ import java.time.LocalDate
 
 class Test : DescribeSpec({
 
-    // 1. SETUP (Juego de datos)
     val comandante = Comandante()
     val conformista = Conformista()
     val base = BaseLanus()

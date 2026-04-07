@@ -21,7 +21,7 @@ class Mision(
     fun fracasar_misiones_tripulantes() {tripulantes.forEach({it -> it.fallar_mision()})}
     fun cancelar_misiones_tripulantes() {tripulantes.forEach({it -> it.cancelar_mision()})}
 
-    var estado = Estados.BORRADOR
+    var estado = Estados.BORRADORs
 
     fun iniciar() {if(estado == Estados.BORRADOR) estado = Estados.EN_CURSO}
 

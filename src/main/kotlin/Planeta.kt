@@ -16,11 +16,11 @@ class Planeta(
 ){
     // METODOS
     fun toxicidadBaja(): Boolean = toxicidad < 30
-    fun radiacion_baja(): Boolean = radiacion < 40
+    fun radiacionBaja(): Boolean = radiacion < 40
     fun tempIdeal(): Boolean = temperaturaMedia in 0.0..40.0
-    fun gravedadSoportable() : Boolean = gravedad in 0.0..40.0
-    fun es_habitable():Boolean = tempIdeal() && gravedadSoportable() && hayAguaLiquida && toxicidadBaja() && radiacion_baja()
+    fun gravSoportable() : Boolean = gravedad in 0.0..40.0
+    fun esHabitable():Boolean = tempIdeal() && gravSoportable() && hayAguaLiquida && toxicidadBaja() && radiacionBaja()
     fun indicePeligrosidad():Double = (radiacion+toxicidad+actividadTectonica)/3
-    fun es_explorable():Boolean = !es_habitable() && indicePeligrosidad()<60
+    fun esExplorable():Boolean = !esHabitable() && indicePeligrosidad()<60
     fun aterrizaje() {fue_aterrizado = !fue_aterrizado}
 }

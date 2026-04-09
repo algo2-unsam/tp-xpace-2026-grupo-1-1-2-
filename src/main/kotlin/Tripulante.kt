@@ -3,6 +3,26 @@ import java.time.LocalDate
 import java.time.Period
 import kotlin.properties.Delegates
 
+class Tripulante(
+    val nombre: String = "",
+    val apellido: String = "",
+    var salarioBase: Double = 10.0,
+    var rol: Rol = Comandante(),
+    var perfil: PerfilActitud = Conformista()
+){
+    val fechaNacimiento: LocalDate = LocalDate.of(1980, 11, 23)
+    val fechaInicio: LocalDate = LocalDate.of(2000, 1, 1)
+    var baseAsignada: BaseLanzamiento = BaseLanus()
+    var misionesExitosas: Int = 0
+    var misionesFallidas: Int = 0
+    var misionesParcialmenteExitosas: Int = 0
+    var misionActual: Mision? = null
+
+    fun aniosActividad(): Int = Period.between(fechaInicio, LocalDate.now()).years
+    fun experiencia(): Int = aniosActividad() + (misionesExitosas/2) + (misionesFallidas/2) + (misionesParcialmenteExitosas/4)
+}
+
+/*
 data class DatosTripulante(
     var nombre: String,
     var apellido: String,
@@ -96,4 +116,5 @@ class Exigente() : Aptitud {
 
 /*
     Implementar roless
+ */
  */

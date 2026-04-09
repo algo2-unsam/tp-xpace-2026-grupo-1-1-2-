@@ -5,64 +5,82 @@ import java.time.temporal.ChronoUnit
 import kotlin.properties.Delegates
 
 abstract class Nave(
-        open var nombre:String,
-        open val id:Int,
-        open val fecha_fabricacion:LocalDate,
-        open var velocidad_promedio:Double,
-        open val autonomia:Double,
-        open val consumo:Double
+        open var nombre: String = "Atenea",
+        open val id: String = "AD741",
+        open val fechaFabricacion: LocalDate = LocalDate.of(1990, 1, 1),
+        open var velocidadPromedio: Double = 100.0,
+        open val autonomia: Double = 500.0,
+        open val consumoBase: Double = 5.1
         ){
-    var en_mision:Boolean=false
-    fun es_moderna() : Boolean = antiguedad() < 5
-    fun antiguedad() : Long = ChronoUnit.YEARS.between(fecha_fabricacion, LocalDate.now())
+    var enMision: Boolean = false
+    fun antiguedad() : Long = ChronoUnit.YEARS.between(fechaFabricacion, LocalDate.now())
+    fun esModerna() : Boolean = antiguedad() < 5
+    fun puedeAlcanzar(distancia : Double) : Boolean = distancia*365/velocidadPromedio*2 <= autonomia
+    fun consumoTotal(distanciaPlaneta: Double): Double = consumoTotal()*distanciaPlaneta
+    open fun consumoTotal(): Double {return consumoBase}
+    /*
     open fun consumo_anios_luz() : Double {return consumo}
-    fun puede_alcanzar(distancia : Double) = distancia*365/velocidad_promedio*2 <= autonomia
     open fun es_apta() : Boolean = true
+    */
+}
+
+abstract class NaveTransportadora(
+    override var nombre: String,
+    override val id : String,
+    override val fechaFabricacion: LocalDate,
+    override var velocidadPromedio: Double,
+    override val autonomia: Double,
+    override val consumoBase: Double,
+    var capacidadMaxima: Int
+    ) : Nave(nombre, id, fechaFabricacion, velocidadPromedio, autonomia, consumoBase) {
+    fun añadir
 }
 
 class Sonda(
-    override var nombre:String,
-    override val id:Int,
-    override val fecha_fabricacion:LocalDate,
-    override var velocidad_promedio:Double,
-    override val autonomia:Double,
-    override val consumo:Double
-) : Nave(nombre, id, fecha_fabricacion, velocidad_promedio, autonomia, consumo) {
+    override var nombre:String = "Sonda",
+    override val id: String = "S-001",
+    override val fechaFabricacion: LocalDate = LocalDate.of(2000, 1, 1),
+    override var velocidadPromedio:Double = 100.0,
+    override val autonomia:Double = 500.0,
+    override val consumoBase:Double = 10.0
+) : Nave(nombre, id, fechaFabricacion, velocidadPromedio, autonomia, consumoBase) {
 
 }
 
-abstract  class Transbordador (
-    override var nombre:String,
-    override val id:Int,
-    override val fecha_fabricacion:LocalDate,
-    override var velocidad_promedio:Double,
-    override val autonomia:Double,
-    override val consumo:Double,
-    val capacidad:Int
-) : Nave(nombre, id, fecha_fabricacion, velocidad_promedio, autonomia, consumo) {
-    val tripulantes = mutableSetOf<Tripulante>()
+class Transbordador (
+    override var nombre:String = "Transbordador",
+    override val id: String = "S-002",
+    override val fechaFabricacion: LocalDate = LocalDate.of(2000, 1, 1),
+    override var velocidadPromedio:Double = 100.0,
+    override val autonomia:Double = 500.0,
+    override val consumoBase:Double = 10.0,
+    val capacidadMaxima: Int = 5
+) : Nave(nombre, id, fechaFabricacion, velocidadPromedio, autonomia, consumoBase) {
+    var tripulantes = mutableSetOf<Tripulante>()
 
-    fun carga() = tripulantes.size
-    fun añadir(tripulante:Tripulante) {if(tiene_capacidad()) tripulantes.add(tripulante)}
-    fun tiene_capacidad() : Boolean = carga() < capacidad
-    override fun consumo_anios_luz() : Double =  super.consumo + (super.consumo*0.1)*carga()
-    override fun es_apta() : Boolean = tiene_capacidad()
+    fun cantidadTripulantes(): Int = tripulantes.size
+    fun tieneCapacidad(): Boolean = capacidadMaxima > cantidadTripulantes()
+    fun añadirTripulante(tripulante:Tripulante) {if (tieneCapacidad()) tripulantes.add(tripulante)}
+    override fun consumoTotal(): Double = super.consumoTotal() + (super.consumoTotal() *cantidadTripulantes())
+    fun liberarNave() {tripulantes.clear()}
 }
 
 class Carguero (
-    override var nombre:String,
-    override val id:Int,
-    override val fecha_fabricacion:LocalDate,
-    override var velocidad_promedio:Double,
-    override val autonomia:Double,
-    override val consumo:Double,
-    val capacidad : Double,
-    var carga : Double = 0.0
-) : Nave(nombre, id, fecha_fabricacion, velocidad_promedio, autonomia, consumo) {
-    fun añadir(_carga: Double)  { if (tiene_capacidad()) carga += _carga }
-    fun tiene_capacidad(): Boolean = carga < capacidad
-    override fun consumo_anios_luz(): Double = (super.consumo + super.consumo * 0.05 * carga) * bonus_antiguedad()
-    fun bonus_antiguedad(): Double = if (antiguedad() > 10) 1.2 else 1.0
+    override var nombre:String = "Carguero",
+    override val id: String = "S-003",
+    override val fechaFabricacion: LocalDate = LocalDate.of(1990, 1, 1),
+    override var velocidadPromedio:Double = 100.0,
+    override val autonomia:Double = 500.0,
+    override val consumoBase:Double = 10.0,
+    val capacidad : Double = 20.0,
+) : Nave(nombre, id, fechaFabricacion, velocidadPromedio, autonomia, consumoBase) {
+    var carga: Double = 0.0
+    fun tieneCapacidad(): Boolean = carga < capacidad
+    fun añadirCarga(kg: Double) {if(tieneCapacidad()) carga += kg}
+    fun bonusAntiguedad(): Double {if( antiguedad()>10 ) return 1.2 else return 1.1}
+    override fun consumoTotal(): Double = (super.consumoTotal() + (0.1*carga))*bonusAntiguedad()
+
+    fun liberarNave() {carga = 0.0}
 }
 
 /*

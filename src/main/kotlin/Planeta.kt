@@ -2,7 +2,7 @@ package ar.edu.unsam.algo2
 import java.time.LocalDate
 
 class Planeta(
-    val nombre: String,
+    val nombre: String = "Pluton",
     var temperaturaMedia: Double = 63.0,
     val gravedad: Double = 3.71,
     var radiacion: Double = 25.0,
@@ -12,7 +12,7 @@ class Planeta(
     val tamanio: Double = 25.0,
     val fechaDescubrimiento: LocalDate = LocalDate.of(1990, 1, 1),
     val distanciaTierra: Double = 2.0,
-    var fue_aterrizado: Boolean
+    var fue_aterrizado: Boolean = false
 ){
     // METODOS
     fun toxicidadBaja(): Boolean = toxicidad < 30

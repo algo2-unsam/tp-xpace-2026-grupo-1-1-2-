@@ -2,6 +2,29 @@ package ar.edu.unsam.algo2
 import java.time.LocalDate
 
 class Mision(
+    val nombre: String="Mision 1",
+    val descripcion: String = "Viaje a planeta",
+    val fechaLanzamiento: LocalDate = LocalDate.of(2027, 1, 1)
+){
+    val tripulantes = mutableSetOf<Tripulante>()
+    var nave: Nave = Transbordador()
+    var planeta: Planeta = Planeta()
+    var estado: EstadoMision = EstadoMision.BORRADOR
+
+    fun completar() {
+        if(estado == EstadoMision.EN_CURSO) {
+            estado = EstadoMision.COMPLETADA
+            planeta.aterrizaje()
+            tripulantes.forEach() {it.completar_mision()}
+            nave.liberarNave()
+        }
+    }
+}
+
+enum class EstadoMision { BORRADOR, EN_CURSO, COMPLETADA, FALLIDA, CANCELADA }
+
+/*
+class Mision(
     var nombre:String,
     var descripcion:String,
     var fecha_lanzamiento: LocalDate,
@@ -46,7 +69,7 @@ class Mision(
 public enum class Estados {
     BORRADOR, COMPLETADA, CANCELADA, EN_CURSO, FALLIDA
 }
-
+*/
 
 /*
     Implementar estados de Mision

@@ -21,5 +21,5 @@ class Planeta(
     fun esHabitable():Boolean = tempIdeal() && gravSoportable() && hayAguaLiquida && toxicidadBaja() && radiacionBaja()
     fun indicePeligrosidad():Double = (radiacion+toxicidad+actividadTectonica)/3
     fun esExplorable():Boolean = !esHabitable() && indicePeligrosidad()<60
-    //fun aterrizaje() {fueAterrizado = !fueAterrizado}
+    fun aterrizaje() {fueAterrizado = !fueAterrizado}
 }

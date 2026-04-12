@@ -1,63 +1,69 @@
 package ar.edu.unsam.algo2
-
 import java.time.LocalDate
+
+enum class EstadoMision { BORRADOR, EN_CURSO, COMPLETADA, FALLIDA, CANCELADA }
 
 class Mision(
     val nombre: String="Mision1",
     val descripcion: String="Mision1",
-    val fechaLanz: LocalDate = LocalDate.of(2027, 1, 1)
-) {
-    var tripulantes: MutableList<Tripulante> = mutableListOf()
+    val fechaLanz: LocalDate = LocalDate.of(2007, 1, 1),
     var nave: Nave= Transbordador()
-    //var planeta: Planeta= Pluton()
-    var estado: EstadoMision = EstadoMision.BORRADOR
 
-    fun lanzar(): Boolean {
-        val mismaBaseYNaveEnBase = if (tripulantes.isNotEmpty()) {
+) {
+    var estado: EstadoMision = EstadoMision.BORRADOR
+    var tripulantes: MutableList<Tripulante> = mutableListOf()
+    var planeta: Planeta= Planeta()
+
+    fun mismaBaseYNaveEnBase(): Boolean =
+        if (tripulantes.isNotEmpty()) {
             val baseComun = tripulantes.first().baseAsignada
-            tripulantes.all { it.baseAsignada == baseComun } && baseComun.navesEstacionadas.contains(nave)
+            tripulantes.all { it.baseAsignada == baseComun } &&
+                    baseComun.navesEstacionadas.contains(nave)
         } else true
 
-        val condiciones = estado == EstadoMision.BORRADOR &&
-                nave.puedeAlcanzar(planeta) &&
-                tripulantes.all { it.esAptoPara(this) } &&
-                capacidadValida() &&
-                mismaBaseYNaveEnBase
+    fun preLanzamiento(): Boolean =
+        estado == EstadoMision.BORRADOR && nave.puedeAlcanzar(planeta) && tripulantes.all { it.esAptoPara(this) } && capacidadValida() && mismaBaseYNaveEnBase()
 
-        if (condiciones) {
+    fun lanzar() {
+        if (preLanzamiento()){
             estado = EstadoMision.EN_CURSO
             nave.enMision = true
             tripulantes.forEach { it.misionActual = this }
-            return true
         }
-        return false
     }
-    fun completar(): Boolean {
+
+    fun completar(){
         if (estado == EstadoMision.EN_CURSO) {
             estado = EstadoMision.COMPLETADA
             planeta.aterrizado = true
             tripulantes.forEach {
                 it.misExitosa += 1
-                it.misionActual = null // Liberamos al tripulante
+                it.misionActual = null
             }
             nave.enMision = false
-            return true
         }
-        return false
     }
 
-    fun fallar(): Boolean {
+    fun fallar() {
         estado = EstadoMision.FALLIDA
-        tripulantes.forEach {it.misFallidas+=1}
+        tripulantes.forEach { it.misFallidas += 1 }
         nave.enMision = false
-        return true
     }
-    fun cancelar(): Boolean {
+    fun cancelar() {
         if (estado == EstadoMision.EN_CURSO && altoRiesgo()){
             estado = EstadoMision.CANCELADA
             nave.enMision = false
             tripulantes.forEach {it.misParcial+=1}
-            return true
         }
-        return false
     }
+
+    fun capacidadValida(): Boolean {
+        return if (nave is Transbordador) {
+            tripulantes.size <= (nave as Transbordador).capacidadMax
+        } else true
+    }
+
+    fun duracionEstimada(): Double = (planeta.distTierra * 365 / nave.velocidadProm) * 2
+
+    fun altoRiesgo(): Boolean = !planeta.esHabitable() && duracionEstimada() > 500
+}

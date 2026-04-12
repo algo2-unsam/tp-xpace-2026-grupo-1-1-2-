@@ -6,10 +6,8 @@ abstract class BaseLanzamiento() {
     open val capacidadMax: Int = 10
     val direccion: Direccion = Direccion()
     val navesEstacionadas = mutableListOf<Nave>()
-}
-
-class BaseLanus: BaseLanzamiento() {
-    override val nombre = "Base1"
+    fun alojaNave(nave: Nave): Boolean = navesEstacionadas.contains(nave)
+    fun coordenadasBase(): Point = direccion.coordenadas
 }
 
 class Direccion(){
@@ -17,5 +15,5 @@ class Direccion(){
     open val ciudad : String = ""
     open val calle : String = ""
     open val altura : Int = 0
-    open val ubiGeo : Point = Point(0, 0)
+    open val coordenadas : Point = Point(0, 0)
 }

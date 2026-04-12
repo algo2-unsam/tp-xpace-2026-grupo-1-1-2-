@@ -12,7 +12,7 @@ class Planeta(
     val tamanio: Double = 25.0,
     val fechaDescubrimiento: LocalDate = LocalDate.of(1990, 1, 1),
     val distanciaTierra: Double = 2.0,
-    var fue_aterrizado: Boolean = false
+    var fueAterrizado: Boolean = false
 ){
     // METODOS
     fun toxicidadBaja(): Boolean = toxicidad < 30
@@ -22,5 +22,5 @@ class Planeta(
     fun esHabitable():Boolean = tempIdeal() && gravSoportable() && hayAguaLiquida && toxicidadBaja() && radiacionBaja()
     fun indicePeligrosidad():Double = (radiacion+toxicidad+actividadTectonica)/3
     fun esExplorable():Boolean = !esHabitable() && indicePeligrosidad()<60
-    fun aterrizaje() {fue_aterrizado = !fue_aterrizado}
+    fun aterrizaje() {fueAterrizado = !fueAterrizado}
 }
